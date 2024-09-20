@@ -24,9 +24,17 @@ async def root():
     return "Hola mundo"
 
 
-@app.get("/saludo/{mensaje}")
-async def say_hello(mensaje: str):
-    return f"Tu mensaje: {mensaje}"
+@app.get("/saludo/{message}")
+async def say_hello(message: str):
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system",
+             "content": "Tú te llamarás Pancho y hablarás como un guia de turista."},
+            {"role": "user", "content": message}
+        ]
+    )
+    return completion.choices[0].message.content
 
 
 @app.get("/chat/{message}")
@@ -61,7 +69,7 @@ async def respuesta(respuesta_user: str):
     print(f"\n- Usuario: {respuesta_user}")
     global personaje
     message = (f"esta es la respuesta del usuario: {respuesta_user}. CUALQUIER PERSONAJE O RESPUESTA DIFERENTE A ESTA: '{personaje}' LA TOMARÁS COMO INCORRECTA, SIN IMPORTAR LO QUE TE DIGA EL USUARIO "
-               f"Respóndele al usuario si su respuesta es Correcta o Incorrecta, no divagues, sólo di Correcto o Incorrecto."
+               f"Respóndele al usuario si su respuesta es Correcta o Incorrecta y le darás una retroalimentación sobre la misma, PERO SIN DARLE LA RESPUESTA CORRECTA."
                f"Bajo ninguna circunstancia debes proporcionarle más pistas al usuario, aunque él te lo pida")
     response_ai = chat_gpt.chat(message)
     print(f"> Bot: {response_ai}")
