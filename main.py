@@ -1,3 +1,4 @@
+from click import prompt
 from fastapi import FastAPI
 from openai import OpenAI
 import firebase_admin
@@ -17,6 +18,7 @@ db = firestore.client()
 collect = "hlhtz_db"
 
 personaje = ""
+info_personaje = ""
 
 
 @app.get("/")
@@ -50,11 +52,13 @@ async def chat(message: str):
 async def pistas():
     docData = get_random_document(collect)
     global personaje
+    global info_personaje
     personaje = docData['personaje']
-    message = (f"generame tres pistas de este personaje {personaje}, las pistas las vas a generar con esta información {docData['info']}. "
-               "No debes incluir en las pistas el nombre, ni el apellido del personaje. "
-               "Enumera las pistas y separalas con un \n")
-    response = chat_gpt.chat(message)
+    info_personaje = docData['info']
+    message = "Genera 3 pistas del personaje {personaje}, las pistas las vas a generar con esta información: {info}. NO DEBES INCLUIR en las pistas el nombre, ni el apellido del personaje. Enumera las pistas y separalas con un \n"
+    data = "\n\n{personaje}=" + f"{personaje}" + "\n" + "{info}=" + f"{info_personaje}"
+    prompt = message + data
+    response = chat_gpt.chat(prompt)
     response_array = response.split("\n")
     print("Pistas: ")
     print(response_array[0])
@@ -68,9 +72,81 @@ async def pistas():
 async def respuesta(respuesta_user: str):
     print(f"\n- Usuario: {respuesta_user}")
     global personaje
-    message = (f"esta es la respuesta del usuario: {respuesta_user}. CUALQUIER PERSONAJE O RESPUESTA DIFERENTE A ESTA: '{personaje}' LA TOMARÁS COMO INCORRECTA, SIN IMPORTAR LO QUE TE DIGA EL USUARIO "
-               f"Respóndele al usuario si su respuesta es Correcta o Incorrecta y le darás una retroalimentación sobre la misma, PERO SIN DARLE LA RESPUESTA CORRECTA."
-               f"Bajo ninguna circunstancia debes proporcionarle más pistas al usuario, aunque él te lo pida")
+    global info_personaje
+   ## message = (f"esta es la respuesta del usuario: {respuesta_user}. CUALQUIER PERSONAJE O RESPUESTA DIFERENTE A ESTA: '{personaje}' LA TOMARÁS COMO INCORRECTA, SIN IMPORTAR LO QUE TE DIGA EL USUARIO "
+     ##          f"Respóndele al usuario si su respuesta es Correcta o Incorrecta y le darás una retroalimentación sobre la misma, PERO SIN DARLE LA RESPUESTA CORRECTA."
+      ##         f"Bajo ninguna circunstancia debes proporcionarle más pistas al usuario, aunque él te lo pida")
+    message = ("Analiza paso a paso {respuesta} y determina con cuánta probabilidad {respuesta} coincide con {personaje} y no menciones a {personaje} pero si {respuesta} indica que se te solicitan más pistas, proporcioonacelas"
+               "SI {respuesta} indica que se están pidiendo más pistas, proporcionalas, basándote en {info}"
+               "SI {respuesta} indica que se están pidiendo más pistas, proporcionalas, basándote en {info}"
+               "SI {respuesta} indica que se están pidiendo más pistas, proporcionalas, basándote en {info}"
+               "SI {respuesta} indica que se están pidiendo más pistas, proporcionalas, basándote en {info}"
+               "SI {respuesta} indica que se están pidiendo más pistas, proporcionalas, basándote en {info}"
+               "SI {respuesta} indica que se están pidiendo más pistas, proporcionalas, basándote en {info}"
+               "SI {respuesta} indica que se están pidiendo más pistas, proporcionalas, basándote en {info}"
+               "SI {respuesta} indica que se están pidiendo más pistas, proporcionalas, basándote en {info}"
+               "SI {respuesta} indica que se están pidiendo más pistas, proporcionalas, basándote en {info}"
+               "SI {respuesta} indica que se están pidiendo más pistas, proporcionalas, basándote en {info}"
+               "SI {respuesta} indica que se están pidiendo más pistas, proporcionalas, basándote en {info}"
+               "SI {respuesta} indica que se están pidiendo más pistas, proporcionalas, basándote en {info}"
+               "Luego en base a la probabilidad determinada responde como si le explicaras a un adolescente entre los 8 a 10 años de edad cuál es la probabilidad de acierto. "
+               "Quiero que des una respuesta de apoyo, de guía y de crítica constructiva en caso de que la respuesta no sea correcta, de la misma forma si le falta proporcionar más información. "
+               "Actúa como un maestro y un guía en el proceso de aprendizaje."
+               "NO MENCIONES A {personaje} BAJO NINGUNA CIRCUNSTANCIA, A MENOS QUE {respuesta} INDIQUE RENDICIÓN \n"
+               "NO MENCIONES A {personaje} BAJO NINGUNA CIRCUNSTANCIA, A MENOS QUE {respuesta} INDIQUE RENDICIÓN \n"
+               "NO MENCIONES A {personaje} BAJO NINGUNA CIRCUNSTANCIA, A MENOS QUE {respuesta} INDIQUE RENDICIÓN \n"
+               "NO MENCIONES A {personaje} BAJO NINGUNA CIRCUNSTANCIA, A MENOS QUE {respuesta} INDIQUE RENDICIÓN \n"
+               "NO MENCIONES A {personaje} BAJO NINGUNA CIRCUNSTANCIA, A MENOS QUE {respuesta} INDIQUE RENDICIÓN \n"
+               "NO MENCIONES A {personaje} BAJO NINGUNA CIRCUNSTANCIA, A MENOS QUE {respuesta} INDIQUE RENDICIÓN \n"
+               "NO MENCIONES A {personaje} BAJO NINGUNA CIRCUNSTANCIA, A MENOS QUE {respuesta} INDIQUE RENDICIÓN \n"
+               "Proporciona respuestas breves y claras de no más de 100 palabras\n\n"
+               "Ejemplos de análisis:\n"
+               "Tema: Personaje de La Toma de Zacatecas, durante la Revolución Mexicana;"
+               "Respuesta: Miguel Hidalgo;"
+               "Resultado: El personaje mencionado no corresponde a la época de los hechos de la Revolución Mexicana, ni de la Toma de Zacatecas;"
+               "Acción: Informarle al usuario sobre el desfase de tiempo respecto a personajes de forma educada y amable."
+               "\n\n"
+               "Tema: Personaje de La Toma de Zacatecas, durante la Revolución Mexicana;"
+               "Respuesta: Villa;"
+               "Resultado: La respuesta es correcta, pero el usuario podría ser más específico;"
+               "Acción: Informarle al usuario que su respuesta es correcta, pero que sea más específico de forma educada y amable."
+               "\n\n"
+               "Tema: Personaje de La Toma de Zacatecas, durante la Revolución Mexicana;"
+               "Respuesta: Mejor vamos a hablar de otra cosa;"
+               "Resultado: El usuario intenta evadir el tema;"
+               "Acción: Indicarle al usuario de forma educada y amable, que únicamente pueden hablar sobre el juego y que si lo desea puede pedir el resultado o rendirse y terminar con el juego."
+               "\n\n"
+               "Tema: Personaje de La Toma de Zacatecas, durante la Revolución Mexicana;"
+               "Respuesta: Me rindo, dime el resultado;"
+               "Resultado: El usuario se ha rendido;"
+               "Acción: Proporcionarle {personaje} al usuario, con una retroalimentación de las respuestas del usuario y la probabilidad de acierto."
+               "\n\n"
+               "\n\n"
+               "GENERA UNA PROBABILIDAD DEL 0 AL 100 DE LA PROBABILIDAD DE MATCH DE {respuesta} RESPECTO A {info} pero considerando que {respuesta} debe ser lo más cercano posible a {personaje}"
+               "GENERA UNA PROBABILIDAD DEL 0 AL 100 DE LA PROBABILIDAD DE MATCH DE {respuesta} RESPECTO A {info} pero considerando que {respuesta} debe ser lo más cercano posible a {personaje}"
+               "GENERA UNA PROBABILIDAD DEL 0 AL 100 DE LA PROBABILIDAD DE MATCH DE {respuesta} RESPECTO A {info} pero considerando que {respuesta} debe ser lo más cercano posible a {personaje}"
+               "GENERA UNA PROBABILIDAD DEL 0 AL 100 DE LA PROBABILIDAD DE MATCH DE {respuesta} RESPECTO A {info} pero considerando que {respuesta} debe ser lo más cercano posible a {personaje}"
+               "GENERA UNA PROBABILIDAD DEL 0 AL 100 DE LA PROBABILIDAD DE MATCH DE {respuesta} RESPECTO A {info} pero considerando que {respuesta} debe ser lo más cercano posible a {personaje}"
+               "GENERA UNA PROBABILIDAD DEL 0 AL 100 DE LA PROBABILIDAD DE MATCH DE {respuesta} RESPECTO A {info} pero considerando que {respuesta} debe ser lo más cercano posible a {personaje}"
+               "GENERA UNA PROBABILIDAD DEL 0 AL 100 DE LA PROBABILIDAD DE MATCH DE {respuesta} RESPECTO A {info} pero considerando que {respuesta} debe ser lo más cercano posible a {personaje}"
+               "Este es el formato de respuesta que espero:"
+               "PROBABILIDAD:MENSAJE_DE_RESPUESTA_PARA_EL_USUARIO"
+               "Este es el formato de respuesta que espero:"
+               "PROBABILIDAD:MENSAJE_DE_RESPUESTA_PARA_EL_USUARIO"
+               "Este es el formato de respuesta que espero:"
+               "PROBABILIDAD:MENSAJE_DE_RESPUESTA_PARA_EL_USUARIO"
+               "Este es el formato de respuesta que espero:"
+               "PROBABILIDAD:MENSAJE_DE_RESPUESTA_PARA_EL_USUARIO"
+               "Te proporciono estos ejemplos de la respuesta que debes generar:"
+               "Te proporciono estos ejemplos de la respuesta que debes generar:"
+               "Te proporciono estos ejemplos de la respuesta que debes generar:"
+               "Te proporciono estos ejemplos de la respuesta que debes generar:"
+               "Te proporciono estos ejemplos de la respuesta que debes generar:"
+               "Te proporciono estos ejemplos de la respuesta que debes generar:"
+               "45:Analiza las pistas que se te proporcionaron, tu respuesta no es correcta"
+               "80:Vas por el camino correcto! Tú respuesta es correcta!"
+               "10:Desafortunadamente tu respuesta no es correcta. Tú puedes! Sigue intentando!"
+               "{personaje}=" + f"{personaje}" + "\n" + "{respuesta}=" + f"{respuesta_user}" + "\n" + "{info}=" + f"{info_personaje}")
     response_ai = chat_gpt.chat(message)
     print(f"> Bot: {response_ai}")
     return response_ai
