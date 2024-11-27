@@ -7,6 +7,7 @@ from firebase_admin import firestore
 import random
 
 from ChatGPT import ChatGPT
+from payload.Gaming import Gaming
 
 cred = credentials.Certificate("utils/keys/serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
@@ -17,13 +18,25 @@ client = OpenAI()
 db = firestore.client()
 collect = "hlhtz_db"
 
-personaje = ""
-info_personaje = ""
+gaming_list = []
 
 
 @app.get("/")
 async def root():
     return "Hola mundo"
+
+
+@app.get("/create-new-game-instance")
+async def create_new_game_instance():
+    global gaming_list
+    chat_gpt = ChatGPT()
+    personaje = ""
+    info_personaje = ""
+    instructions_game = ""
+    new_instance = Gaming(chat_gpt, personaje, info_personaje, instructions_game)
+    gaming_list.append(new_instance)
+    index_of_new_instance = len(gaming_list) - 1
+    return index_of_new_instance
 
 
 @app.get("/saludo/{message}")
@@ -44,30 +57,95 @@ async def chat(message: str):
     message += "*"
     print("\n- Usuario: ", message)
     response = chat_gpt.chat(message)
-    print("- Bot: ",response)
+    print("- Bot: ", response)
     return response
 
 
-@app.get("/pistas")
-async def pistas():
+@app.get("/pistas/{index_instance}")
+async def pistas(index_instance: int):
     docData = get_random_document(collect)
-    global personaje
-    global info_personaje
-    personaje = docData['personaje']
-    info_personaje = docData['info']
-    message = "Genera 3 pistas del personaje {personaje}, las pistas las vas a generar con esta información: {info}. NO DEBES INCLUIR en las pistas el nombre, ni el apellido del personaje. Enumera las pistas y separalas con un \n"
-    data = "\n\n{personaje}=" + f"{personaje}" + "\n" + "{info}=" + f"{info_personaje}"
+    global gaming_list
+    if 0 > index_instance > len(gaming_list):
+        return "Index out of range"
+    gaming_list[index_instance].personaje = docData['personaje']
+    gaming_list[index_instance].info_personaje = docData['info']
+    message = "Genera 3 pistas del personaje {personaje}, las pistas las vas a generar con esta información: {info}. Las pistas deben ser entendibles para un niño de entre 10 a 12 años de edad. NO DEBES INCLUIR en las pistas el nombre, ni el apellido del personaje. Enumera las pistas y separalas con un \n"
+    data = "\n\n{personaje}=" + f"{gaming_list[index_instance].personaje}" + "\n" + "{info}=" + f"{gaming_list[index_instance].info_personaje}"
     prompt = message + data
-    response = chat_gpt.chat(prompt)
+    response = gaming_list[index_instance].chat_gpt.chat(prompt)
     response_array = response.split("\n")
+    print(f"Pistas del jugador {index_instance}: ")
+    print(response_array[0])
+    print(response_array[1])
+    print(response_array[2])
+    set_start_game_instructions(index_instance)
+    gaming_list[index_instance].chat_gpt.chat(
+        gaming_list[index_instance].instructions_game
+    )
+    return response_array
+
+
+@app.get("/respuesta/{index_instance}/{respuesta_user}")
+async def respuesta(index_instance: int, respuesta_user: str):
+    global gaming_list
+    if 0 > index_instance > len(gaming_list):
+        return "Index out of range"
+    print(f"\n- Usuario {index_instance}: {respuesta_user}")
+    response_ai = gaming_list[index_instance].chat_gpt.chat(respuesta_user)
+    print(f"> Bot {index_instance}: {response_ai}")
+    return response_ai
+
+
+@app.get("/nuevo_juego/{index_instance}")
+async def nuevo_juego(index_instance: int, ):
+    global gaming_list
+    if 0 > index_instance > len(gaming_list):
+        return "Index out of range"
+    gaming_list[index_instance].chat_gpt = ChatGPT()
+    docData = get_random_document(collect)
+    gaming_list[index_instance].personaje = docData['personaje']
+    gaming_list[index_instance].info_personaje = docData['info']
+    message = "Genera 3 pistas del personaje {personaje}, las pistas las vas a generar con esta información: {info}. Las pistas deben ser entendibles para un niño de entre 10 a 12 años de edad. NO DEBES INCLUIR en las pistas el nombre, ni el apellido del personaje. Enumera las pistas y separalas con un \n"
+    data = "\n\n{personaje}=" + f"{gaming_list[index_instance].personaje}" + "\n" + "{info}=" + f"{gaming_list[index_instance].info_personaje}"
+    prompt = message + data
+    response = gaming_list[index_instance].chat_gpt.chat(prompt)
+    response_array = response.split("\n")
+    print(f"\n\nJuguemos otra vez jugador {index_instance}!")
     print("Pistas: ")
     print(response_array[0])
     print(response_array[1])
     print(response_array[2])
-    prompt_juego = (
+    set_start_game_instructions(index_instance)
+    gaming_list[index_instance].chat_gpt.chat(
+        gaming_list[index_instance].instructions_game
+    )
+    return response_array
+
+
+@app.get("/specific/{collection}/{document}")
+async def say_hello(collection: str, document: str):
+    return get_document(collection, document)
+
+@app.get("/size/{collection}")
+async def get_size(collection: str):
+    return size_collection(collection)
+
+@app.get("/random/{collection}")
+async def get_random(collection: str):
+    return get_random_between_collection(collection)
+
+
+@app.get("/random_document/{collection}")
+async def get_random_doc(collection: str):
+    return get_random_document(collection)
+
+
+def set_start_game_instructions(index_instance: int):
+    global gaming_list
+    gaming_list[index_instance].instructions_game = (
         "Parámetros del juego:"
-        f"Nombre del personaje: {personaje}"
-        f"Información del personaje: {info_personaje}"
+        f"Nombre del personaje: {gaming_list[index_instance].personaje}"
+        f"Información del personaje: {gaming_list[index_instance].info_personaje}"
         "Ejemplo de cómo funcionarría el juego:"
         "Información del personaje:"
         "Este personaje es un detective muy famoso, conocido por su aguda observación y habilidades deductivas. Vive en Londres y tiene un amigo llamado Watson."
@@ -89,57 +167,14 @@ async def pistas():
         "80%: Respuesta muy cercana o precisa, pero no el nombre del personaje."
         "100%: Respuesta correcta con el nombre exacto del personaje."
         "\n"
-        "Nunca le proporciones el nombre del personaje, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
     )
-    chat_gpt.chat(prompt_juego)
-    return response_array
-
-
-@app.get("/respuesta/{respuesta_user}")
-async def respuesta(respuesta_user: str):
-    print(f"\n- Usuario: {respuesta_user}")
-    response_ai = chat_gpt.chat(respuesta_user)
-    print(f"> Bot: {response_ai}")
-    return response_ai
-
-
-@app.get("/nuevo_juego")
-async def nuevo_juego():
-    chat_gpt = ChatGPT()
-    docData = get_random_document(collect)
-    global personaje
-    personaje = docData['personaje']
-    message = (
-        f"Generame tres pistas de este personaje {docData['personaje']}, las pistas las vas a generar con esta información {docData['info']}. "
-        f"No debes incluir en las pistas el nombre, ni el apellido del personaje. "
-        f"Enumera las pistas y separalas con un \\n")
-    response = chat_gpt.chat(message)
-    response_array = response.split("\n")
-    print("\n\nJuguemos otra vez!")
-    print("Pistas: ")
-    print(response_array[0])
-    print(response_array[1])
-    print(response_array[2])
-
-    return response_array
-
-
-@app.get("/specific/{collection}/{document}")
-async def say_hello(collection: str, document: str):
-    return get_document(collection, document)
-
-@app.get("/size/{collection}")
-async def get_size(collection: str):
-    return size_collection(collection)
-
-@app.get("/random/{collection}")
-async def get_random(collection: str):
-    return get_random_between_collection(collection)
-
-
-@app.get("/random_document/{collection}")
-async def get_random_doc(collection: str):
-    return get_random_document(collection)
 
 
 def get_all_docs(collectionName):
