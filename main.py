@@ -26,19 +26,6 @@ async def root():
     return "Hola mundo"
 
 
-@app.get("/create-new-game-instance")
-async def create_new_game_instance():
-    global gaming_list
-    chat_gpt = ChatGPT()
-    personaje = ""
-    info_personaje = ""
-    instructions_game = ""
-    new_instance = Gaming(chat_gpt, personaje, info_personaje, instructions_game)
-    gaming_list.append(new_instance)
-    index_of_new_instance = len(gaming_list) - 1
-    return index_of_new_instance
-
-
 @app.get("/saludo/{message}")
 async def say_hello(message: str):
     completion = client.chat.completions.create(
@@ -61,14 +48,27 @@ async def chat(message: str):
     return response
 
 
-@app.get("/pistas/{index_instance}")
-async def pistas(index_instance: int):
-    docData = get_random_document(collect)
+@app.get("/create-new-game-instance")
+async def create_new_game_instance():
     global gaming_list
-    if 0 > index_instance > len(gaming_list):
+    chat_gpt = ChatGPT()
+    personaje = ""
+    info_personaje = ""
+    instructions_game = ""
+    new_instance = Gaming(chat_gpt, personaje, info_personaje, instructions_game)
+    gaming_list.append(new_instance)
+    index_of_new_instance = len(gaming_list) - 1
+    return index_of_new_instance
+
+
+@app.get("/{index_instance}/get-pistas")
+async def get_pistas(index_instance: int):
+    doc_data = get_random_document(collect)
+    global gaming_list
+    if 0 > index_instance >= len(gaming_list):
         return "Index out of range"
-    gaming_list[index_instance].personaje = docData['personaje']
-    gaming_list[index_instance].info_personaje = docData['info']
+    gaming_list[index_instance].personaje = doc_data['personaje']
+    gaming_list[index_instance].info_personaje = doc_data['info']
     message = "Genera 3 pistas del personaje {personaje}, las pistas las vas a generar con esta información: {info}. Las pistas deben ser entendibles para un niño de entre 10 a 12 años de edad. NO DEBES INCLUIR en las pistas el nombre, ni el apellido del personaje. Enumera las pistas y separalas con un \n"
     data = "\n\n{personaje}=" + f"{gaming_list[index_instance].personaje}" + "\n" + "{info}=" + f"{gaming_list[index_instance].info_personaje}"
     prompt = message + data
@@ -85,10 +85,10 @@ async def pistas(index_instance: int):
     return response_array
 
 
-@app.get("/respuesta/{index_instance}/{respuesta_user}")
-async def respuesta(index_instance: int, respuesta_user: str):
+@app.get("/{index_instance}/procesar-respuesta-usuario/{respuesta_user}")
+async def procesar_respuesta_usuario(index_instance: int, respuesta_user: str):
     global gaming_list
-    if 0 > index_instance > len(gaming_list):
+    if 0 > index_instance >= len(gaming_list):
         return "Index out of range"
     print(f"\n- Usuario {index_instance}: {respuesta_user}")
     response_ai = gaming_list[index_instance].chat_gpt.chat(respuesta_user)
@@ -96,15 +96,15 @@ async def respuesta(index_instance: int, respuesta_user: str):
     return response_ai
 
 
-@app.get("/nuevo_juego/{index_instance}")
+@app.get("/{index_instance}/nuevo_juego")
 async def nuevo_juego(index_instance: int, ):
     global gaming_list
-    if 0 > index_instance > len(gaming_list):
+    if 0 > index_instance >= len(gaming_list):
         return "Index out of range"
     gaming_list[index_instance].chat_gpt = ChatGPT()
-    docData = get_random_document(collect)
-    gaming_list[index_instance].personaje = docData['personaje']
-    gaming_list[index_instance].info_personaje = docData['info']
+    doc_data = get_random_document(collect)
+    gaming_list[index_instance].personaje = doc_data['personaje']
+    gaming_list[index_instance].info_personaje = doc_data['info']
     message = "Genera 3 pistas del personaje {personaje}, las pistas las vas a generar con esta información: {info}. Las pistas deben ser entendibles para un niño de entre 10 a 12 años de edad. NO DEBES INCLUIR en las pistas el nombre, ni el apellido del personaje. Enumera las pistas y separalas con un \n"
     data = "\n\n{personaje}=" + f"{gaming_list[index_instance].personaje}" + "\n" + "{info}=" + f"{gaming_list[index_instance].info_personaje}"
     prompt = message + data
@@ -126,9 +126,11 @@ async def nuevo_juego(index_instance: int, ):
 async def say_hello(collection: str, document: str):
     return get_document(collection, document)
 
+
 @app.get("/size/{collection}")
 async def get_size(collection: str):
     return size_collection(collection)
+
 
 @app.get("/random/{collection}")
 async def get_random(collection: str):
@@ -207,7 +209,6 @@ def get_document(collection_name, document_id):
         return None
 
 
-
 def size_collection(collection_name):
     collection_ref = db.collection(collection_name)
     # Get the query snapshot
@@ -215,6 +216,7 @@ def size_collection(collection_name):
     # Get the total count from the snapshot
     total_count = len(query_snapshot)  # Use len() for collection size
     return total_count
+
 
 def get_random_between_collection(collection_name):
     # Get a random number between the first element of the array and the array size
@@ -230,5 +232,5 @@ def get_random_document(collection_name):
     random_index = random.randint(0, len(document_ids) - 1)
     # Step 3: Use the random index to get the corresponding document
     random_document_ref = collection.document(document_ids[random_index])
-    docData = random_document_ref.get().to_dict()
-    return docData
+    doc_data = random_document_ref.get().to_dict()
+    return doc_data
