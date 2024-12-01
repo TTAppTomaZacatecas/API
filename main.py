@@ -1,10 +1,10 @@
-from click import prompt
-from fastapi import FastAPI
-from openai import OpenAI
+import random
+
 import firebase_admin
+from fastapi import FastAPI
 from firebase_admin import credentials
 from firebase_admin import firestore
-import random
+from openai import OpenAI
 
 from ChatGPT import ChatGPT
 from payload.Gaming import Gaming
@@ -59,6 +59,12 @@ async def create_new_game_instance():
     gaming_list.append(new_instance)
     index_of_new_instance = len(gaming_list) - 1
     return index_of_new_instance
+
+
+@app.get("/clear-all-instances")
+async def clear_all_instances():
+    global gaming_list
+    gaming_list.clear()
 
 
 @app.get("/{index_instance}/get-pistas")
