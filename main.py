@@ -80,15 +80,17 @@ async def get_pistas(index_instance: int):
     prompt = message + data
     response = gaming_list[index_instance].chat_gpt.chat(prompt)
     response_array = response.split("\n")
+    # Remove empty and blank items
+    cleaned_list = [s for s in response_array if s and s.strip()]
     print(f"Pistas del jugador {index_instance}: ")
-    print(response_array[0])
-    print(response_array[1])
-    print(response_array[2])
+    print(cleaned_list[0])
+    print(cleaned_list[1])
+    print(cleaned_list[2])
     set_start_game_instructions(index_instance)
     gaming_list[index_instance].chat_gpt.chat(
         gaming_list[index_instance].instructions_game
     )
-    return response_array
+    return cleaned_list
 
 
 @app.get("/{index_instance}/procesar-respuesta-usuario/{respuesta_user}")
@@ -116,16 +118,18 @@ async def nuevo_juego(index_instance: int, ):
     prompt = message + data
     response = gaming_list[index_instance].chat_gpt.chat(prompt)
     response_array = response.split("\n")
+    # Remove empty and blank items
+    cleaned_list = [s for s in response_array if s and s.strip()]
     print(f"\n\nJuguemos otra vez jugador {index_instance}!")
     print("Pistas: ")
-    print(response_array[0])
-    print(response_array[1])
-    print(response_array[2])
+    print(cleaned_list[0])
+    print(cleaned_list[1])
+    print(cleaned_list[2])
     set_start_game_instructions(index_instance)
     gaming_list[index_instance].chat_gpt.chat(
         gaming_list[index_instance].instructions_game
     )
-    return response_array
+    return cleaned_list
 
 
 @app.get("/specific/{collection}/{document}")
