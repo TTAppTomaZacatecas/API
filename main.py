@@ -186,6 +186,20 @@ def set_start_game_instructions(index_instance: int):
         "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
         "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
         "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
+        "Nunca le proporciones el nombre del personaje, su pseudónimo, su apellido, o la forma como lo llamaban, bajo ninguna circunstania. A menos que explícitamente te diga que se rinde."
     )
 
 
